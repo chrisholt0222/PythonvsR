@@ -1,0 +1,47 @@
+---
+title: "Predicting Housing Sale Prices in Ames, Iowa"
+output:
+  html_document:
+    df_print: paged
+---
+
+Project Description
+With 79 explanatory variables describing (almost) every aspect of residential homes in Ames, Iowa, our goal is to predict the final price of each home of the test data set using the training data set.
+
+Datasets
+80 Columns x 1460 Rows of housing sales data from years 2006 to 2010
+
+Source: https://www.kaggle.com/c/house-prices-advanced-regression-techniques/data
+
+Load and print structure of pricing data
+```{r}
+data <- read.csv(file = 'data.csv')
+str(data)
+```
+
+One-way plots
+```{r}
+nplots <- seq(from=1, to=9, by=1)
+
+par(mfrow=c(3,3))
+
+for (i in nplots) {
+plot(data[,i], data[,81], xlab=colnames(data)[i], ylab=colnames(data)[81])
+}
+```
+
+Select data columns
+```{r}
+df <- subset(data, select=c(
+        "OverallQual", "GrLivArea", "GarageCars",
+        "ExterQual", "GarageArea", "TotalBsmtSF",
+        "KitchenQual", "FullBath", "TotRmsAbvGrd",
+        "YearBuilt", "YearRemodAdd", "SalePrice"))
+str(df)
+```
+
+Summarize df
+```{r}
+summary(df)
+pairs(df)
+```
