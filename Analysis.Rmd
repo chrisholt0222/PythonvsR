@@ -22,10 +22,6 @@ data <- read.csv(file = 'data.csv',
 str(data)
 ```
 
-```{r}
-colnames(data)
-```
-
 Encoding of non-numberic fields
 ```{r}
 data1 <- data
@@ -48,15 +44,6 @@ par(mfrow=c(3,3))
 for (i in nplots) {
   plot(data1[,i], data1[,81], xlab=colnames(data)[i], ylab=colnames(data)[81])
 }
-```
-Ordinary least squares - Single variable
-```{r}
-i=6
-f <- colnames(data1)[i]
-frm <- as.formula(paste("SalePrice ~ 0 + ", f))
-fit <- glm(formula = frm, data=data1, family = gaussian())
-print(f)
-summary(fit)
 ```
 
 Ordinary least squares - Single variable
@@ -81,24 +68,40 @@ devs[1:15,]
 Select data columns
 ```{r}
 df <- subset(data, select=c(
-        "OverallQual", "GrLivArea", "GarageCars",
-        "ExterQual", "GarageArea", "TotalBsmtSF",
-        "KitchenQual", "FullBath", "TotRmsAbvGrd",
-        "YearBuilt", "YearRemodAdd", "SalePrice"))
+        "OverallQual",
+        "GrLivArea",
+        "X1stFlrSF",
+        "GarageCars",
+        "TotRmsAbvGrd",
+        "TotalBsmtSF",
+        "FullBath",
+        "GarageArea",
+        "YearBuilt",
+        "YearRemodAdd",
+        "YrSold"))
 
 for (f in colnames(df)) {
-  if (class(df[[f]]) == 'character') {
-      lev <- sort(unique(c(df[[f]])))
-      df[[f]] <- as.integer(factor(df[[f]], levels = lev))
-  }
+ df[f] = (df[f] - min(df[f])) / (max(df[f]) - min(df[f]))
 }
+
+df["SalePrice"] = data["SalePrice"]
 str(df)
-```
-
-
-
-Summarize df
-```{r}
 summary(df)
-pairs(df)
 ```
+
+```{r}
+frm <- as.formula("SalePrice ~ 
+        OverallQual +
+        GrLivArea +
+        X1stFlrSF +
+        GarageCars +
+        TotRmsAbvGrd +
+        TotalBsmtSF +
+        FullBath +
+        GarageArea +
+        YearBuilt +
+        YearRemodAdd")
+fit <- glm(formula = frm, data=df, family = gaussian())
+summary(fit)
+```
+
