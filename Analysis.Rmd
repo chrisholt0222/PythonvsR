@@ -19,44 +19,86 @@ data <- read.csv(file = 'data.csv',
                  header = TRUE, 
                  sep = ",",
                  stringsAsFactors = FALSE)
-str(data)
+"str(data)"
 ```
 
-Encoding of non-numberic fields
+Select non object columns (and Set NA to 0)
+For purposes of this exercise use only numeric variables (treat as continuous)
 ```{r}
-data1 <- data
-data1[is.na(data1)] <- 0
-
-for (f in colnames(data1)) {
-  if (class(data1[[f]]) == 'character') {
-      lev <- sort(unique(c(data1[[f]])))
-      data1[[f]] <- as.integer(factor(data1[[f]], levels = lev))
-  }
-}
-str(data1)
+df <- data[, sapply(data, class) != "character"]
+df[is.na(df)] <- 0
+str(df)
 ```
+
 One-way plots
+Graphs target variable (SalePrice) vs each independent variable
+First 9 variables excluding Id
 ```{r}
-nplots <- seq(from=1, to=9, by=1)
+nplots <- seq(from=2, to=10, by=1)
 
 par(mfrow=c(3,3))
 
 for (i in nplots) {
-  plot(data1[,i], data1[,81], xlab=colnames(data)[i], ylab=colnames(data)[81])
+  plot(df[,i], df[,38], xlab=colnames(df)[i], ylab=colnames(df)[38])
 }
+```
+
+Graphs target variable (SalePrice) vs each independent variable
+11-19 variables excluding Id
+```{r}
+nplots <- seq(from=11, to=19, by=1)
+
+par(mfrow=c(3,3))
+
+for (i in nplots) {
+  plot(df[,i], df[,38], xlab=colnames(df)[i], ylab=colnames(df)[38])
+}
+```
+
+Graphs target variable (SalePrice) vs each independent variable
+19-27 variables excluding Id
+```{r}
+nplots <- seq(from=20, to=28, by=1)
+
+par(mfrow=c(3,3))
+
+for (i in nplots) {
+  plot(df[,i], df[,38], xlab=colnames(df)[i], ylab=colnames(df)[38])
+}
+```
+
+Graphs target variable (SalePrice) vs each independent variable
+28-37 variables excluding Id
+```{r}
+nplots <- seq(from=29, to=37, by=1)
+
+par(mfrow=c(3,3))
+
+for (i in nplots) {
+  plot(df[,i], df[,38], xlab=colnames(df)[i], ylab=colnames(df)[38])
+}
+```
+
+Initial Modeling and Variable Selection
+
+```{r}
+i = 2
+frm <- as.formula(paste("SalePrice ~ 0 + ", colnames(data)[i]))
+fit <- glm(formula = frm, data=df, family = gaussian())
+summary(fit)
 ```
 
 Ordinary least squares - Single variable
 ```{r}
-nums <- seq(from=1, to=80, by=1)
+nums <- seq(from=1, to=37, by=1)
 fields <- character()
 dev <- double()
 
 for (i in nums) {
-  f <- colnames(data1)[i]
+  f <- colnames(df)[i]
   fields[i] <- f
   frm <- as.formula(paste("SalePrice ~ 0 + ", f))
-  fit <- glm(formula = frm, data=data1, family = gaussian())
+  fit <- glm(formula = frm, data=df, family = gaussian())
   dev[i] <- summary(fit)$deviance
 }
 
@@ -65,43 +107,122 @@ devs <- devs[order(devs$dev),]
 devs[1:15,]
 ```
 
-Select data columns
+Selected independent variables
 ```{r}
-df <- subset(data, select=c(
-        "OverallQual",
-        "GrLivArea",
-        "X1stFlrSF",
-        "GarageCars",
-        "TotRmsAbvGrd",
-        "TotalBsmtSF",
-        "FullBath",
-        "GarageArea",
-        "YearBuilt",
-        "YearRemodAdd",
-        "YrSold"))
+cols <- c(
+ 'LotArea',
+ 'OverallQual',
+ 'OverallCond',
+ 'YearBuilt',
+ 'TotalBsmtSF',
+ 'X1stFlrSF',
+ 'GrLivArea',
+ 'FullBath',
+ 'GarageCars',
+ 'WoodDeckSF'
+)
 
-for (f in colnames(df)) {
- df[f] = (df[f] - min(df[f])) / (max(df[f]) - min(df[f]))
+X <- data[,cols]
+
+for (f in colnames(X)) {
+ X[f] = (X[f] - min(X[f])) / (max(X[f]) - min(X[f]))
 }
 
-df["SalePrice"] = data["SalePrice"]
-str(df)
-summary(df)
+str(X)
+```
+
+Calculate correlation between fields
+```{r}
+corr = cor(X)
+round(corr,3)
+```
+
+Fit model to selected data
+```{r}
+X["SalePrice"] = data["SalePrice"]
+
+fit <- glm(formula = "SalePrice ~ .", data=X, family = gaussian())
+summary(fit)
+```
+Selected independent variables
+```{r}
+cols <- c(
+ 'LotArea',
+ 'OverallQual',
+ 'OverallCond',
+ 'YearBuilt',
+ 'TotalBsmtSF',
+ 
+ 'GrLivArea',
+ 
+ 'GarageCars',
+ 'WoodDeckSF'
+)
+
+X <- data[,cols]
+
+for (f in colnames(X)) {
+ X[f] = (X[f] - min(X[f])) / (max(X[f]) - min(X[f]))
+}
+
+str(X)
+```
+
+Calculate correlation between fields
+```{r}
+corr = cor(X)
+round(corr,3)
 ```
 
 ```{r}
-frm <- as.formula("SalePrice ~ 
-        OverallQual +
-        GrLivArea +
-        X1stFlrSF +
-        GarageCars +
-        TotRmsAbvGrd +
-        TotalBsmtSF +
-        FullBath +
-        GarageArea +
-        YearBuilt +
-        YearRemodAdd")
-fit <- glm(formula = frm, data=df, family = gaussian())
+X["SalePrice"] = data["SalePrice"]
+
+fit <- glm(formula = "SalePrice ~ .", data=X, family = gaussian())
 summary(fit)
+```
+Histogram of Sale Price
+```{r}
+hist(data$SalePrice, breaks=30)
+```
+
+
+```{r}
+set.seed(11)   
+sample <- sample.int(n = nrow(X), size = floor(0.7*nrow(X)), replace = F)
+train <- X[sample, ]
+test  <- X[-sample, ]
+str(train)
+```
+
+```{r}
+fit <- glm(formula = "SalePrice ~ .", data=train, family = gaussian(link="log"))
+summary(fit)
+```
+
+```{r}
+pred_train <- predict(fit, train, type = "response")
+
+par(mfrow=c(1,2))
+plot(pred_train, as.numeric(train$SalePrice))
+abline(a=0,b=1,col="red")
+plot(sort(pred_train), sort(as.numeric(train$SalePrice)))
+abline(a=0,b=1,col="red")
+```
+
+
+````{r}
+pred_test <- predict(fit, test, type = "response")
+
+par(mfrow=c(1,2))
+plot(pred_test, test$SalePrice)
+abline(a=0,b=1,col="red")
+plot(sort(pred_test), sort(as.numeric(test$SalePrice)))
+abline(a=0,b=1,col="red")
+```
+
+
+```{r}
+mean((pred_train - as.numeric(train$SalePrice))^2) ^ 0.5
+mean((pred_test - as.numeric(test$SalePrice))^2) ^ 0.5
 ```
 
