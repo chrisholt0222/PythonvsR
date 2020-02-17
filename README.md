@@ -13,5 +13,6 @@ Datasets
 
 Data Source: https://www.kaggle.com/c/house-prices-advanced-regression-techniques/data
 
-RMarkdown file : Analysis - RMarkup.RDM
-Jupyter Notebook: Analysis - Jupyter Notebook.IPYNB
+File options:
+1. RMarkdown file : Analysis - RMarkup.RDM
+2. Jupyter Notebook: Analysis - Jupyter Notebook.IPYNB
